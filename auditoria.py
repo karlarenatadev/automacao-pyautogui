@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 from datetime import datetime
+import matplotlib.pyplot  as plt
 
 # criação de pastas para organização
 pastas = ["Aprovados", "Reprovados", "Logs"]
@@ -56,7 +57,7 @@ nome_arquivo_kpi = f"Logs/resumo_gerencial_{timestamp}.txt"
 tabela_aprovada.to_csv(nome_arquivo_aprovado, index=False)
 
 # Cria um arquivo de texto com os erros (Log)
-with open("relatorio_erros.txt", "w") as arquivo:
+with open("nome_arquivo_erros", "w") as arquivo:
     for erro in produtos_com_erro:
         arquivo.write(erro + "\n")
 
@@ -85,3 +86,23 @@ with open(nome_arquivo_kpi, "w", encoding='utf-8') as arquivo:
 print("Processo finalizado!")
 print(f"Relatórios gerados nas pastas: {pastas}")
 print(f"Resumo rápido: R$ {valor_estoque:.2f} em estoque validado.")
+
+#gerar o gráfico 
+print("Gerando gráfico gerencial...")
+#preparar os dados
+contagem_marcas = tabela_aprovada["marca"].value_counts()
+# Criar o gráfico
+plt.figure(figsize=(10, 6)) # Tamanho da imagem
+contagem_marcas.plot(kind='bar', color='skyblue') # Tipo barra
+
+plt.title("Produtos Aprovados por Marca")
+plt.xlabel("Marca")
+plt.ylabel("Qtd. Produtos")
+plt.xticks(rotation=45) # Gira os nomes das marcas para ler melhor
+plt.tight_layout() # Ajusta para não cortar textos
+
+#salvar o gráfico
+nome_arquivo_grafico = f"Logs/grafico_marcas_{timestamp}.png"
+plt.savefig(nome_arquivo_grafico)
+print(f"Gráfico salvo em: {nome_arquivo_grafico}")
+
