@@ -57,7 +57,7 @@ nome_arquivo_kpi = f"Logs/resumo_gerencial_{timestamp}.txt"
 tabela_aprovada.to_csv(nome_arquivo_aprovado, index=False)
 
 # Cria um arquivo de texto com os erros (Log)
-with open("nome_arquivo_erros", "w") as arquivo:
+with open(nome_arquivo_erros, "w") as arquivo:
     for erro in produtos_com_erro:
         arquivo.write(erro + "\n")
 
