@@ -1,0 +1,11 @@
+
+--- RESUMO DA OPERAÇÃO ---
+Data: 2026-01-11_21h30
+Total Processado: 293
+Aprovados: 293
+Reprovados: 0
+
+--- INDICADORES FINANCEIROS (APROVADOS) ---
+Valor Total de Custo: R$ 55217.47
+Preço Médio de Venda: R$ 748.12
+Principal Fornecedor: Apple
