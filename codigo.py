@@ -1,69 +1,67 @@
-import pyautogui 
-import time 
-
-pyautogui.PAUSE = 1 #tempo de pausa de cada comando para dar tempo a maquina entender o que fazer
-
-#comandos para abri o navegador
-
-pyautogui.press("win")
-pyautogui.write("chrome")
-pyautogui.press("enter")
-
-#acessar o site
-
-pyautogui.write("https://dlp.hashtagtreinamentos.com/python/intensivao/login")
-pyautogui.press("enter")
-time.sleep(3)
-
-#login no site da empresa
-# selecionar o campo de email
-pyautogui.click(x=685, y=451)
-pyautogui.write("karlarenata@teste.com")
-
-#selecionar o campo senha
-pyautogui.press("tab")
-pyautogui.write("Password")
-
-#selecionar o botao enviar
-pyautogui.press("tab")
-pyautogui.press("enter")
-
-time.sleep(5) #comando para esperar a pagina carregar
-
-# Passo 3: Importar a base de produtos pra cadastrar
+import pyautogui
+import time
 import pandas as pd
+import glob
+import os
+import subprocess
+import sys
 
-tabela = pd.read_csv("produtos.csv") #guardou os dados numa variavel
+# Configurações globais
+pyautogui.PAUSE = 0.5 
+pyautogui.FAILSAFE = True 
 
-print(tabela) #mostrar que armazenou os dados
+def carregar_dados_auditados():
+    """Busca o arquivo CSV mais recente na pasta Aprovados"""
+    lista_arquivos = glob.glob('Aprovados/produtos_aprovados_*.csv')
+    if not lista_arquivos:
+        print("Erro: Nenhum arquivo encontrado.")
+        sys.exit()
+    arquivo_recente = max(lista_arquivos, key=os.path.getmtime)
+    print(f"--- Usando base: {arquivo_recente} ---")
+    return pd.read_csv(arquivo_recente)
 
-#cadastrar um produto
-for linha in tabela.index:
-    # clicar no campo de código
-    pyautogui.click(x=653, y=294)
-    # pegar da tabela o valor do campo que a gente quer preencher
-    codigo = tabela.loc[linha, "codigo"]
-    # preencher o campo
-    pyautogui.write(str(codigo))
-    # passar para o proximo campo
-    pyautogui.press("tab")
-    # preencher o campo
-    pyautogui.write(str(tabela.loc[linha,"marca"]))
-    pyautogui.press("tab")
-    pyautogui.write(str(tabela.loc[linha, "tipo"]))
-    pyautogui.press("tab")
-    pyautogui.write(str(tabela.loc[linha, "categoria"]))
-    pyautogui.press("tab")
-    pyautogui.write(str(tabela.loc[linha, "preco_unitario"]))
-    pyautogui.press("tab")
-    pyautogui.write(str(tabela.loc[linha, "custo"]))
-    pyautogui.press("tab")
+def iniciar_sistema_ficticio():
+    """Abre o ERP e dá tempo para o usuário focar a janela"""
+    print("Abrindo Sistema ERP...")
+    subprocess.Popen(["python", "sistema_erp.py"])
+    print(">>> JANELA ABERTA. CLIQUE NO CAMPO 'CÓDIGO' AGORA!")
+    time.sleep(5) 
+
+def cadastrar_produto(linha, tabela):
+    # Lista de campos sequenciais
+    colunas = ["codigo", "marca", "tipo", "categoria", "preco_unitario", "custo"]
+    
+    for coluna in colunas:
+        valor = tabela.loc[linha, coluna]
+        # interval=0.1 torna a digitação visível (simula um humano digitando)
+        pyautogui.write(str(valor), interval=0.1)
+        pyautogui.press("tab")
+    
+    # Preenchimento condicional da Observação
     obs = tabela.loc[linha, "obs"]
-    if not pd.isna(obs):
-        pyautogui.write(str(tabela.loc[linha, "obs"]))
-    pyautogui.press("tab")
-    pyautogui.press("enter") # cadastra o produto (botao enviar)
-    # dar scroll de tudo pra cima
-    pyautogui.scroll(5000)
-    # Passo 5: Repetir o processo de cadastro até o fim
+    if not pd.isna(obs) and str(obs) != "nan":
+        pyautogui.write(str(obs), interval=0.1)
+    
+    # Envio do formulário (Tab para focar no botão, Space para apertar)
+    pyautogui.press("tab")   
+    pyautogui.press("space") 
 
+    print(f"Produto {linha} enviado. Aguardando limpeza...")
+    time.sleep(3) 
+
+# --- Execução Principal ---
+try:
+    tabela = carregar_dados_auditados()
+    tabela = tabela.fillna("") # Tratamento de valores vazios
+    
+    iniciar_sistema_ficticio()
+    
+    for linha in tabela.index:
+        cadastrar_produto(linha, tabela)
+        
+    print("\n✅ Automação finalizada com sucesso!")
+
+except KeyboardInterrupt:
+    print("\n🛑 Interrompido pelo usuário.")
+except pyautogui.FailSafeException:
+    print("\n🚫 Segurança ativada: Mouse encostou no canto da tela.")
